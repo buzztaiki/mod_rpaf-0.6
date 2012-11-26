@@ -174,7 +174,7 @@ static char *extract_ip(apr_array_header_t *arr, apr_array_header_t *proxy_ips, 
 
 static apr_status_t rpaf_cleanup(void *data) {
     rpaf_cleanup_rec *rcr = (rpaf_cleanup_rec *)data;
-    rcr->r->connection->remote_ip   = apr_pstrdup(rcr->r->connection->pool, rcr->old_ip);
+    rcr->r->connection->remote_ip   = (char *)rcr->old_ip;
     rcr->r->connection->remote_addr->sa.sin.sin_addr.s_addr = apr_inet_addr(rcr->r->connection->remote_ip);
     rcr->r->connection->remote_addr->sa.sin.sin_family = rcr->old_family;
     return APR_SUCCESS;
@@ -208,11 +208,11 @@ static int change_remote_ip(request_rec *r) {
                 if (*fwdvalue != '\0')
                     ++fwdvalue;
             }
-            rcr->old_ip = apr_pstrdup(r->connection->pool, r->connection->remote_ip);
+            rcr->old_ip = r->connection->remote_ip;
             rcr->old_family = r->connection->remote_addr->sa.sin.sin_family;
             rcr->r = r;
             apr_pool_cleanup_register(r->pool, (void *)rcr, rpaf_cleanup, apr_pool_cleanup_null);
-            r->connection->remote_ip = apr_pstrdup(r->connection->pool, extract_ip(arr, cfg->proxy_ips, cfg->recursive));
+            r->connection->remote_ip = apr_pstrdup(r->pool, extract_ip(arr, cfg->proxy_ips, cfg->recursive));
             r->connection->remote_addr->sa.sin.sin_addr.s_addr = apr_inet_addr(r->connection->remote_ip);
             r->connection->remote_addr->sa.sin.sin_family = AF_INET;
             if (cfg->sethostname) {
