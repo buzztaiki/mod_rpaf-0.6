@@ -12,7 +12,7 @@ mod_rpaf-2.0.la: mod_rpaf-2.0.c
 mod_rpaf-2.0.c:
 
 install: mod_rpaf-2.0.la
-	$(APXS) -i -n mod_rpaf-2.0.so mod_rpaf-2.0.la
+	$(APXS) -A -i mod_rpaf-2.0.la
 
 dist: distclean
 	git ls-files -z | cpio -pd -0 --quiet dist/$(PKG_NAME)
