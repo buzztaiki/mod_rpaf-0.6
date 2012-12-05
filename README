@@ -8,6 +8,7 @@ The differences from the original module are:
 * Feature: Support for partial IP address as '10.1.' for RPAFproxy_ips. The author of this patch is unknown.
 * Feature: Recursive ip extraction with RPAFrecursive directive.
 * Bugfix: In the case of APR_HAVE_IPV6-enabled build, access control of Order/Allow/Deny does not work correctly.
+* Bugfix: Memory is not released immediately when release request.
 * Support of httpd 1.3 was deleted.
 
 ## Compile and Install
