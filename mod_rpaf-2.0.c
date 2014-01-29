@@ -81,6 +81,7 @@ typedef struct {
     const char         *headername;
     apr_array_header_t *proxy_ips;
     int                recursive;
+    const char         *remote_addr_env;
 } rpaf_server_cfg;
 
 typedef struct {
@@ -147,6 +148,16 @@ static const char *rpaf_set_recursive(cmd_parms *cmd, void *dummy, int flag) {
     return NULL;
 }
 
+static const char *rpaf_set_remote_addr_env(cmd_parms *cmd, void *dummy, const char *env) {
+    server_rec *s = cmd->server;
+    rpaf_server_cfg *cfg = (rpaf_server_cfg *)ap_get_module_config(s->module_config, 
+                                                                   &rpaf_module);
+
+    cfg->remote_addr_env = env;
+    return NULL;
+}
+
+
 static int is_in_array(const char *remote_ip, apr_array_header_t *proxy_ips) {
     int i;
     char **list = (char**)proxy_ips->elts;
@@ -189,6 +200,9 @@ static int change_remote_ip(request_rec *r) {
     if (!cfg->enable)
         return DECLINED;
 
+    if (cfg->remote_addr_env) {
+        apr_table_set(r->subprocess_env, cfg->remote_addr_env, r->connection->remote_ip);
+    }
     if (is_in_array(r->connection->remote_ip, cfg->proxy_ips) == 1) {
         /* check if cfg->headername is set and if it is use
            that instead of X-Forwarded-For by default */
@@ -271,6 +285,13 @@ static const command_rec rpaf_cmds[] = {
                  RSRC_CONF,
                  "Enable to support recursive ip extraction."
                  ),
+    AP_INIT_TAKE1(
+                  "RPAFremote_addr_env",
+                  rpaf_set_remote_addr_env,
+                  NULL,
+                  RSRC_CONF,
+                  "Save original remote addr into this variable"
+                  ),
     { NULL }
 };
 
